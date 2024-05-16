@@ -1,18 +1,20 @@
 # general
 seed: 1
 device: 'cuda'
-output_path: 'PNP-results/horse'
+output_path: 'PNP-results/girl_glass'
 
 # data
-image_path: 'data/horse.jpg'
+# image_path: 'assets/girl_glass.jpg'
+image_path: 'assets/yangmi.jpg'
 latents_path: 'latents_forward'
 
 # diffusion
-sd_version: '2.1'
+sd_version: '1.5'
 guidance_scale: 7.5
 n_timesteps: 50
-prompt: a photo of a pink toy horse on the beach
-negative_prompt: ugly, blurry, black, low res, unrealistic
+prompt: clay sculpture style 
+negative_prompt: 'sloppy, messy, grainy, highly detailed, ultra textured, photo, realistic, text, error, cropped,ugly, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature'
+ 
 
 # pnp injection thresholds, ∈ [0, 1]
 pnp_attn_t: 0.5

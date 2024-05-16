@@ -28,7 +28,7 @@ class PNP(nn.Module):
         elif sd_version == '2.0':
             model_key = "stabilityai/stable-diffusion-2-base"
         elif sd_version == '1.5':
-            model_key = "runwayml/stable-diffusion-v1-5"
+            model_key = "/home/heyi/llm/stable-diffusion-v1-5"
         else:
             raise ValueError(f'Stable-diffusion version {sd_version} not supported.')
 

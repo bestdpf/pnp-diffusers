@@ -42,7 +42,7 @@ class Preprocess(nn.Module):
         elif self.sd_version == '2.0':
             model_key = "stabilityai/stable-diffusion-2-base"
         elif self.sd_version == '1.5':
-            model_key = "runwayml/stable-diffusion-v1-5"
+            model_key = "/home/heyi/llm/stable-diffusion-v1-5"
         elif self.sd_version == 'depth':
             model_key = "stabilityai/stable-diffusion-2-depth"
             self.use_depth = True
@@ -173,7 +173,7 @@ def run(opt):
     elif opt.sd_version == '2.0':
         model_key = "stabilityai/stable-diffusion-2-base"
     elif opt.sd_version == '1.5':
-        model_key = "runwayml/stable-diffusion-v1-5"
+        model_key = "/home/heyi/llm/stable-diffusion-v1-5"
     elif opt.sd_version == 'depth':
         model_key = "stabilityai/stable-diffusion-2-depth"
     toy_scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler")
