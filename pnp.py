@@ -9,7 +9,7 @@ from PIL import Image
 import yaml
 from tqdm import tqdm
 from transformers import logging
-from diffusers import DDIMScheduler, StableDiffusionPipeline
+from diffusers import DDIMScheduler, StableDiffusionPipeline, UNet2DConditionModel, StableDiffusionXLPipeline
 
 from pnp_utils import *
 
@@ -29,13 +29,26 @@ class PNP(nn.Module):
             model_key = "stabilityai/stable-diffusion-2-base"
         elif sd_version == '1.5':
             model_key = "/home/heyi/llm/stable-diffusion-v1-5"
+        elif sd_version == 'xl-base':
+            model_key = '/home/heyi/llm/stable-diffusion-xl-base-1.0/'
         else:
             raise ValueError(f'Stable-diffusion version {sd_version} not supported.')
 
         # Create SD models
         print('Loading SD model')
 
-        pipe = StableDiffusionPipeline.from_pretrained(model_key, torch_dtype=torch.float16).to("cuda")
+        if sd_version == 'xl-base':
+            unet = UNet2DConditionModel.from_pretrained(model_key, subfolder="unet", revision="fp16",
+                                                             addition_embed_type=None,
+                                                             torch_dtype=torch.float16).to(self.device)
+
+
+            pipe = StableDiffusionXLPipeline.from_pretrained(model_key,
+                                                           unet=unet,
+                                                           torch_dtype=torch.float16).to("cuda")
+        else:
+            pipe = StableDiffusionPipeline.from_pretrained(model_key,
+                                                           torch_dtype=torch.float16).to("cuda")
         pipe.enable_xformers_memory_efficient_attention()
 
         self.vae = pipe.vae

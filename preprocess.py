@@ -43,6 +43,8 @@ class Preprocess(nn.Module):
             model_key = "stabilityai/stable-diffusion-2-base"
         elif self.sd_version == '1.5':
             model_key = "/home/heyi/llm/stable-diffusion-v1-5"
+        elif self.sd_version == 'xl-base':
+            model_key = '/home/heyi/llm/stable-diffusion-xl-base-1.0/'
         elif self.sd_version == 'depth':
             model_key = "stabilityai/stable-diffusion-2-depth"
             self.use_depth = True
@@ -56,6 +58,7 @@ class Preprocess(nn.Module):
         self.text_encoder = CLIPTextModel.from_pretrained(model_key, subfolder="text_encoder", revision="fp16",
                                                           torch_dtype=torch.float16).to(self.device)
         self.unet = UNet2DConditionModel.from_pretrained(model_key, subfolder="unet", revision="fp16",
+                                                         addition_embed_type=None,
                                                          torch_dtype=torch.float16).to(self.device)
         self.scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler")
         print(f'[INFO] loaded stable diffusion!')
@@ -176,6 +179,8 @@ def run(opt):
         model_key = "/home/heyi/llm/stable-diffusion-v1-5"
     elif opt.sd_version == 'depth':
         model_key = "stabilityai/stable-diffusion-2-depth"
+    elif opt.sd_version == 'xl-base':
+        model_key = '/home/heyi/llm/stable-diffusion-xl-base-1.0/'
     toy_scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler")
     toy_scheduler.set_timesteps(opt.save_steps)
     timesteps_to_save, num_inference_steps = get_timesteps(toy_scheduler, num_inference_steps=opt.save_steps,
