@@ -210,7 +210,7 @@ if __name__ == "__main__":
     parser.add_argument('--data_path', type=str,
                         default='data/horse.jpg')
     parser.add_argument('--save_dir', type=str, default='latents')
-    parser.add_argument('--sd_version', type=str, default='2.1', choices=['1.5', '2.0', '2.1'],
+    parser.add_argument('--sd_version', type=str, default='2.1', choices=['1.5', '2.0', '2.1', 'xl-base'],
                         help="stable diffusion version")
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--steps', type=int, default=999)

@@ -9,7 +9,7 @@ image_path: 'assets/yangmi.jpg'
 latents_path: 'latents_forward'
 
 # diffusion
-sd_version: '1.5'
+sd_version: 'xl-base'
 guidance_scale: 7.5
 n_timesteps: 50
 prompt: clay sculpture style 
