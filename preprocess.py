@@ -85,7 +85,7 @@ class Preprocess(nn.Module):
         return imgs
 
     def load_img(self, image_path):
-        image_pil = T.Resize(512)(Image.open(image_path).convert("RGB"))
+        image_pil = T.Resize(1024)(Image.open(image_path).convert("RGB"))
         image = T.ToTensor()(image_pil).unsqueeze(0).to(device)
         return image
 
@@ -116,9 +116,9 @@ class Preprocess(nn.Module):
                 sigma = (1 - alpha_prod_t) ** 0.5
                 sigma_prev = (1 - alpha_prod_t_prev) ** 0.5
 
-                latent_model_input = torch.cat([latent] * 2)
-                print(f'{latent_model_input.shape} vs {cond_batch.shape}')
-                eps = self.unet(latent_model_input, t, encoder_hidden_states=cond_batch).sample
+                # latent_model_input = torch.cat([latent] * 2)
+                # print(f'{latent_model_input.shape} vs {cond_batch.shape}')
+                eps = self.unet(latent, t, encoder_hidden_states=cond_batch).sample
 
                 pred_x0 = (latent - sigma_prev * eps) / mu_prev
                 latent = mu * pred_x0 + sigma * eps
