@@ -1125,7 +1125,7 @@ def extract_latents(opt):
 
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
 
-    pipe.inject(0,0)
+    pipe.injection_schedule = None
 
     _, all_latents = pipe.invert(
         prompt='',
