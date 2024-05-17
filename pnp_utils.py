@@ -9,11 +9,16 @@ def seed_everything(seed):
     random.seed(seed)
     np.random.seed(seed)
 
+conv_res_dict = {1: [1]}
+down_res_dict = {2: [0, 1]}
+up_res_dict = {1: [0, 1, 2]}
+
 def register_time(model, t):
-    conv_module = model.unet.up_blocks[1].resnets[1]
-    setattr(conv_module, 't', t)
-    down_res_dict = {2: [0, 1]}
-    up_res_dict = {1: [0, 1, 2]}
+    for res in conv_res_dict:
+        for block in conv_res_dict[res]:
+            conv_module = model.unet.up_blocks[res].resnets[block]
+            setattr(conv_module, 't', t)
+
     for res in up_res_dict:
         for block in up_res_dict[res]:
             module = model.unet.up_blocks[res].attentions[block].transformer_blocks[0].attn1
@@ -87,10 +92,16 @@ def register_attention_control_efficient(model, injection_schedule):
 
         return forward
 
-    res_dict = {1: [0, 1, 2]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
-    for res in res_dict:
-        for block in res_dict[res]:
+    # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
+    for res in up_res_dict:
+        for block in up_res_dict[res]:
             module = model.unet.up_blocks[res].attentions[block].transformer_blocks[0].attn1
+            module.forward = sa_forward(module)
+            setattr(module, 'injection_schedule', injection_schedule)
+
+    for res in down_res_dict:
+        for block in down_res_dict[res]:
+            module = model.unet.down_blocks[res].attentions[block].transformer_blocks[0].attn1
             module.forward = sa_forward(module)
             setattr(module, 'injection_schedule', injection_schedule)
 
@@ -148,9 +159,8 @@ def register_conv_control_efficient(model, injection_schedule):
 
         return forward
 
-    res_dict = {1: [0, 1, 2]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
-    for res in res_dict:
-        for block in res_dict[res]:
+    for res in conv_res_dict:
+        for block in conv_res_dict[res]:
             conv_module = model.unet.up_blocks[res].resnets[block]
             conv_module.forward = conv_forward(conv_module)
             setattr(conv_module, 'injection_schedule', injection_schedule)
