@@ -12,10 +12,11 @@ latents_path: 'latents_forward'
 sd_version: 'xl-base'
 guidance_scale: 7.5
 n_timesteps: 50
-prompt: clay sculpture style 
+prompt: clay style 
+# prompt: clay sculpture style 
 negative_prompt: 'sloppy, messy, grainy, highly detailed, ultra textured, photo, realistic, text, error, cropped,ugly, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature'
  
 
 # pnp injection thresholds, ∈ [0, 1]
-pnp_attn_t: 0.5
-pnp_f_t: 0.8
+pnp_attn_t: 0.0
+pnp_f_t: 0.0
