@@ -1155,7 +1155,7 @@ def extract_latents(opt):
         num_inference_steps=opt.steps,
         image=image,
         ref_latents_dict=all_latents,
-        guidance_scale=7.0,
+        guidance_scale=opt.guidance_scale,
         strength=opt.strength,
     ).images[0]
 
@@ -1174,6 +1174,7 @@ if __name__ == "__main__":
     parser.add_argument('--pnp_attn_t', type=float, default=0.7)
     parser.add_argument('--pnp_f_t', type=float, default=0.8)
     parser.add_argument('--strength', type=float, default=0.7)
+    parser.add_argument('--guidance_scale', type=float, default=7.0)
     parser.add_argument('--steps', type=int, default=50)
     parser.add_argument('--save-steps', type=int, default=1000)
     parser.add_argument('--inversion_prompt', type=str, default='')
