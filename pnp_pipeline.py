@@ -458,11 +458,9 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
         self._num_timesteps = len(timesteps)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(timesteps):
+            for i, t in enumerate(reversed(timesteps)):
                 if self.interrupt:
                     continue
-
-                register_time(self, t.item())
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
@@ -1003,6 +1001,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
+                register_time(self, t.item())
                 ref_latent = ref_latents_dict[t.item()]
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([ref_latent] + [latents] * 2) if self.do_classifier_free_guidance else latents
