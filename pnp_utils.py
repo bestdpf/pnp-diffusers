@@ -9,7 +9,7 @@ def seed_everything(seed):
     random.seed(seed)
     np.random.seed(seed)
 
-conv_res_dict = {1: [1]}
+conv_res_dict = {1: [0, 1, 2]}
 down_res_dict = {2: [0, 1]}
 up_res_dict = {1: [0, 1, 2]}
 
