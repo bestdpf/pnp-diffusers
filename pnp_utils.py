@@ -12,8 +12,8 @@ def seed_everything(seed):
 def register_time(model, t):
     conv_module = model.unet.up_blocks[1].resnets[1]
     setattr(conv_module, 't', t)
-    down_res_dict = {1: [0, 1], 2: [0, 1]}
-    up_res_dict = {0: [1, 2], 1: [0, 1, 2]}
+    down_res_dict = {2: [0, 1]}
+    up_res_dict = {1: [0, 1, 2]}
     for res in up_res_dict:
         for block in up_res_dict[res]:
             module = model.unet.up_blocks[res].attentions[block].transformer_blocks[0].attn1
@@ -87,7 +87,7 @@ def register_attention_control_efficient(model, injection_schedule):
 
         return forward
 
-    res_dict = {0: [1, 2], 1: [0, 1, 2]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
+    res_dict = {1: [0, 1, 2]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
     for res in res_dict:
         for block in res_dict[res]:
             module = model.unet.up_blocks[res].attentions[block].transformer_blocks[0].attn1

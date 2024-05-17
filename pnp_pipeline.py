@@ -1156,7 +1156,7 @@ def extract_latents(opt):
     pipe.inject(conv_injection_t, qk_injection_t)
 
     ret_img = pipe(
-        prompt='clay style',
+        prompt='clay sculpture style',
         negative_prompt='sloppy, messy, grainy, highly detailed, ultra textured, photo, realistic, text, error, cropped,ugly, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature',
         num_inference_steps=opt.steps,
         image=image,
