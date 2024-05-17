@@ -148,6 +148,9 @@ def register_conv_control_efficient(model, injection_schedule):
 
         return forward
 
-    conv_module = model.unet.up_blocks[1].resnets[1]
-    conv_module.forward = conv_forward(conv_module)
-    setattr(conv_module, 'injection_schedule', injection_schedule)
+    res_dict = {2: [0, 1]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
+    for res in res_dict:
+        for block in res_dict[res]:
+            conv_module = model.unet.up_blocks[res].resnets[block]
+            conv_module.forward = conv_forward(conv_module)
+            setattr(conv_module, 'injection_schedule', injection_schedule)
