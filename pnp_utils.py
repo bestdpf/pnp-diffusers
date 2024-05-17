@@ -148,7 +148,7 @@ def register_conv_control_efficient(model, injection_schedule):
 
         return forward
 
-    res_dict = {2: [0, 1]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
+    res_dict = {1: [0, 1, 2]}  # we are injecting attention in blocks 4 - 11 of the decoder, so not in the first block of the lowest resolution
     for res in res_dict:
         for block in res_dict[res]:
             conv_module = model.unet.up_blocks[res].resnets[block]
