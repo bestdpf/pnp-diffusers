@@ -96,6 +96,7 @@ def register_attention_control_efficient(model, injection_schedule):
 
 
 def register_conv_control_efficient(model, injection_schedule):
+    print(f'register:\n{model}')
     def conv_forward(self):
         def forward(input_tensor, temb):
             hidden_states = input_tensor
