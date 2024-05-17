@@ -1098,7 +1098,7 @@ def extract_latents(opt):
         prompt='',
         negative_prompt='',
         image=image,
-        guidance_scale=3.5,
+        guidance_scale=1,
         strength=1.0,
         num_inference_steps=opt.steps,
         output_type='latent'
