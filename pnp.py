@@ -87,7 +87,7 @@ class PNP(nn.Module):
     @torch.no_grad()
     def decode_latent(self, latent):
         with torch.autocast(device_type='cuda', dtype=torch.float32):
-            latent = 1 / 0.18215 * latent
+            latent = 1 / self.vae.config.scaling_factor * latent
             img = self.vae.decode(latent).sample
             img = (img / 2 + 0.5).clamp(0, 1)
         return img
