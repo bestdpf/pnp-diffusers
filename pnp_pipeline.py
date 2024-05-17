@@ -11,6 +11,11 @@ from diffusers import (
     DDIMScheduler,
 )
 
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import (
+    EXAMPLE_DOC_STRING,
+    retrieve_timesteps,
+)
+
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
     rescale_noise_cfg,
     StableDiffusionXLPipelineOutput,
@@ -54,7 +59,7 @@ def _backward_ddim(x_tm1, alpha_t, alpha_tm1, eps_xt):
 class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
     @torch.no_grad()
-    @replace_example_docstring(StableDiffusionXLImg2ImgPipeline.EXAMPLE_DOC_STRING)
+    @replace_example_docstring(EXAMPLE_DOC_STRING)
     def __call__(
             self,
             prompt: Union[str, List[str]] = None,
