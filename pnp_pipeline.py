@@ -1026,7 +1026,7 @@ def extract_latents(opt):
                              os.path.splitext(os.path.basename(opt.data_path))[0])
     os.makedirs(save_path, exist_ok=True)
 
-    for t, latents in all_latents.iteritems():
+    for t, latents in all_latents.items():
         torch.save(latents, os.path.join(save_path, f'noisy_latents_{t}.pt'))
 
 
