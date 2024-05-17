@@ -39,6 +39,8 @@ import numpy as np
 
 from tqdm import tqdm
 
+from pnp_utils import register_attention_control_efficient, register_conv_control_efficient
+
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
 
@@ -1103,6 +1105,13 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
         return StableDiffusionXLPipelineOutput(images=image)
 
+    def inject(self, conv_injection_t, qk_injection_t):
+        qk_injection_timesteps = self.scheduler.timesteps[:qk_injection_t] if qk_injection_t >= 0 else []
+        conv_injection_timesteps = self.scheduler.timesteps[:conv_injection_t] if conv_injection_t >= 0 else []
+        # print(f'register:\n{self}')
+        register_attention_control_efficient(self, qk_injection_timesteps)
+        register_conv_control_efficient(self, conv_injection_timesteps)
+
 
 def extract_latents(opt):
 
@@ -1115,6 +1124,8 @@ def extract_latents(opt):
     ).to("cuda")
 
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
+
+    pipe.inject(0,0)
 
     _, all_latents = pipe.invert(
         prompt='',
@@ -1133,6 +1144,10 @@ def extract_latents(opt):
 
     for t, latents in all_latents.items():
         torch.save(latents, os.path.join(save_path, f'noisy_latents_{t}.pt'))
+
+    conv_injection_t, qk_injection_t = int(50*0.8), int(50*0.5)
+
+    pipe.inject(conv_injection_t, qk_injection_t)
 
     ret_img = pipe(
         prompt='clay style',
