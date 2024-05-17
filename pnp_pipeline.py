@@ -599,6 +599,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             eta: float = 0.0,
             generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
             latents: Optional[torch.FloatTensor] = None,
+            ref_latents_dict: Optional[Dict[int,torch.FloatTensor]] = None,
             prompt_embeds: Optional[torch.FloatTensor] = None,
             negative_prompt_embeds: Optional[torch.FloatTensor] = None,
             pooled_prompt_embeds: Optional[torch.FloatTensor] = None,
@@ -856,6 +857,27 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             clip_skip=self.clip_skip,
         )
 
+        (
+            empty_prompt_embeds,
+            empty_negative_prompt_embeds,
+            empty_pooled_prompt_embeds,
+            emptynegative_pooled_prompt_embeds,
+        ) = self.encode_prompt(
+            prompt='',
+            prompt_2='',
+            device=device,
+            num_images_per_prompt=num_images_per_prompt,
+            do_classifier_free_guidance=self.do_classifier_free_guidance,
+            negative_prompt='',
+            negative_prompt_2='',
+            prompt_embeds=None,
+            negative_prompt_embeds=None,
+            pooled_prompt_embeds=None,
+            negative_pooled_prompt_embeds=None,
+            lora_scale=text_encoder_lora_scale,
+            clip_skip=self.clip_skip,
+        )
+
         # 4. Preprocess image
         image = self.image_processor.preprocess(image)
 
@@ -921,10 +943,10 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         add_time_ids = add_time_ids.repeat(batch_size * num_images_per_prompt, 1)
 
         if self.do_classifier_free_guidance:
-            prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)
-            add_text_embeds = torch.cat([negative_pooled_prompt_embeds, add_text_embeds], dim=0)
+            prompt_embeds = torch.cat([empty_prompt_embeds, negative_prompt_embeds, prompt_embeds], dim=0)
+            add_text_embeds = torch.cat([empty_prompt_embeds, negative_pooled_prompt_embeds, add_text_embeds], dim=0)
             add_neg_time_ids = add_neg_time_ids.repeat(batch_size * num_images_per_prompt, 1)
-            add_time_ids = torch.cat([add_neg_time_ids, add_time_ids], dim=0)
+            add_time_ids = torch.cat([add_time_ids, add_neg_time_ids, add_time_ids], dim=0)
 
         prompt_embeds = prompt_embeds.to(device)
         add_text_embeds = add_text_embeds.to(device)
@@ -977,9 +999,9 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
-
+                ref_latent = ref_latents_dict[t]
                 # expand the latents if we are doing classifier free guidance
-                latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                latent_model_input = torch.cat([ref_latent] + [latents] * 2) if self.do_classifier_free_guidance else latents
 
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
@@ -1000,7 +1022,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
                 # perform guidance
                 if self.do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                    noise_pred_re, noise_pred_uncond, noise_pred_text = noise_pred.chunk(3)
                     noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
 
                 if self.do_classifier_free_guidance and self.guidance_rescale > 0.0:
@@ -1111,6 +1133,18 @@ def extract_latents(opt):
 
     for t, latents in all_latents.items():
         torch.save(latents, os.path.join(save_path, f'noisy_latents_{t}.pt'))
+
+    ret_img = pipe(
+        prompt='clay style',
+        negative_prompt='sloppy, messy, grainy, highly detailed, ultra textured, photo, realistic, text, error, cropped,ugly, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature',
+        num_inference_steps=opt.steps,
+        image=image,
+        ref_latents_dict=all_latents,
+        guidance_scale=7.0,
+        strength=1.0,
+    ).images[0]
+
+    ret_img.save(f'PNP-results/girl_glass/output-test.png')
 
 
 if __name__ == "__main__":
