@@ -473,7 +473,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                 added_cond_kwargs = {"text_embeds": add_text_embeds, "time_ids": add_time_ids}
                 if ip_adapter_image is not None or ip_adapter_image_embeds is not None:
                     added_cond_kwargs["image_embeds"] = image_embeds
-                print(f'input shape {latent_model_input.shape} prompt shape {prompt_embeds.shape} text shape {add_text_embeds.shape} {add_time_ids}')
+                # print(f'input shape {latent_model_input.shape} prompt shape {prompt_embeds.shape} text shape {add_text_embeds.shape} {add_time_ids}')
                 noise_pred = self.unet(
                     latent_model_input,
                     t,
@@ -1145,7 +1145,7 @@ def extract_latents(opt):
     for t, latents in all_latents.items():
         torch.save(latents, os.path.join(save_path, f'noisy_latents_{t}.pt'))
 
-    conv_injection_t, qk_injection_t = int(50*0.8), int(50*0.5)
+    conv_injection_t, qk_injection_t = int(50*opt.pnp_f_t), int(50*opt.pnp_attn_t)
 
     pipe.inject(conv_injection_t, qk_injection_t)
 
@@ -1171,6 +1171,8 @@ if __name__ == "__main__":
     parser.add_argument('--sd_version', type=str, default='xl-base', choices=['1.5', '2.0', '2.1', 'xl-base'],
                         help="stable diffusion version")
     parser.add_argument('--seed', type=int, default=1)
+    parser.add_argument('--pnp_attn_t', type=float, default=0.7)
+    parser.add_argument('--pnp_f_t', type=float, default=0.8)
     parser.add_argument('--steps', type=int, default=50)
     parser.add_argument('--save-steps', type=int, default=1000)
     parser.add_argument('--inversion_prompt', type=str, default='')
