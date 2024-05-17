@@ -51,6 +51,8 @@ class PNP(nn.Module):
                                                            torch_dtype=torch.float16).to("cuda")
         pipe.enable_xformers_memory_efficient_attention()
 
+        self.pipe = pipe
+
         self.vae = pipe.vae
         self.tokenizer = pipe.tokenizer
         self.text_encoder = pipe.text_encoder
@@ -63,8 +65,8 @@ class PNP(nn.Module):
         # load image
         self.image, self.eps = self.get_data()
 
-        self.text_embeds = self.get_text_embeds(config["prompt"], config["negative_prompt"])
-        self.pnp_guidance_embeds = self.get_text_embeds("", "").chunk(2)[0]
+        self.text_embeds = self.get_text_embeds_xl(config["prompt"], config["negative_prompt"])
+        self.pnp_guidance_embeds = self.get_text_embeds_xl("", "").chunk(2)[0]
 
 
     @torch.no_grad()
@@ -72,18 +74,27 @@ class PNP(nn.Module):
         # Tokenize text and get embeddings
         text_input = self.tokenizer(prompt, padding='max_length', max_length=self.tokenizer.model_max_length,
                                     truncation=True, return_tensors='pt')
-        text_embeddings = self.text_encoder(text_input.input_ids.to(self.device), output_hidden_states=True)[0]
-        text_embeddings = text_embeddings.hidden_states[-2]
+        text_embeddings = self.text_encoder(text_input.input_ids.to(self.device))[0]
 
         # Do the same for unconditional embeddings
         uncond_input = self.tokenizer(negative_prompt, padding='max_length', max_length=self.tokenizer.model_max_length,
                                       return_tensors='pt')
 
-        uncond_embeddings = self.text_encoder(uncond_input.input_ids.to(self.device), output_hidden_states=True)[0]
-        uncond_embeddings = uncond_embeddings.hidden_states[-2]
+        uncond_embeddings = self.text_encoder(uncond_input.input_ids.to(self.device))[0]
 
         # Cat for final embeddings
         text_embeddings = torch.cat([uncond_embeddings] * batch_size + [text_embeddings] * batch_size)
+        return text_embeddings
+
+    @torch.no_grad()
+    def get_text_embeds_xl(self, prompt, negative_prompt, batch_size=1):
+        (
+            prompt_embeds,
+            negative_prompt_embeds,
+            pooled_prompt_embeds,
+            negative_pooled_prompt_embeds,
+        ) = self.pipe.encode_prompt(prompt=prompt, negative_prompt=negative_prompt, num_images_per_prompt=batch_size)
+        text_embeddings = torch.cat([prompt_embeds, negative_prompt_embeds])
         return text_embeddings
 
     @torch.no_grad()
