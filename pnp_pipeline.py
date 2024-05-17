@@ -14,6 +14,7 @@ from diffusers import (
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import (
     EXAMPLE_DOC_STRING,
     retrieve_timesteps,
+    XLA_AVAILABLE
 )
 
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
@@ -530,7 +531,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                         step_idx = i // getattr(self.scheduler, "order", 1)
                         callback(step_idx, t, latents)
 
-                if StableDiffusionXLImg2ImgPipeline.XLA_AVAILABLE:
+                if XLA_AVAILABLE:
                     xm.mark_step()
 
         if not output_type == "latent":
