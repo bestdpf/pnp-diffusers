@@ -1156,7 +1156,7 @@ def extract_latents(opt):
         image=image,
         ref_latents_dict=all_latents,
         guidance_scale=7.0,
-        strength=1.0,
+        strength=opt.strength,
     ).images[0]
 
     ret_img.save(f'PNP-results/girl_glass/output-test.png')
@@ -1173,6 +1173,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--pnp_attn_t', type=float, default=0.7)
     parser.add_argument('--pnp_f_t', type=float, default=0.8)
+    parser.add_argument('--strength', type=float, default=0.7)
     parser.add_argument('--steps', type=int, default=50)
     parser.add_argument('--save-steps', type=int, default=1000)
     parser.add_argument('--inversion_prompt', type=str, default='')
