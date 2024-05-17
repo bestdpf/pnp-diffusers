@@ -54,7 +54,7 @@ def _backward_ddim(x_tm1, alpha_t, alpha_tm1, eps_xt):
 class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
     @torch.no_grad()
-    # @replace_example_docstring(StableDiffusionXLImg2ImgPipeline.EXAMPLE_DOC_STRING)
+    @replace_example_docstring(StableDiffusionXLImg2ImgPipeline.EXAMPLE_DOC_STRING)
     def __call__(
             self,
             prompt: Union[str, List[str]] = None,
@@ -336,7 +336,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         def denoising_value_valid(dnv):
             return isinstance(dnv, float) and 0 < dnv < 1
 
-        timesteps, num_inference_steps = StableDiffusionXLImg2ImgPipeline.retrieve_timesteps(self.scheduler, num_inference_steps, device, timesteps)
+        timesteps, num_inference_steps = retrieve_timesteps(self.scheduler, num_inference_steps, device, timesteps)
         timesteps, num_inference_steps = self.get_timesteps(
             num_inference_steps,
             strength,
@@ -569,9 +569,9 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         self.maybe_free_model_hooks()
 
         if not return_dict:
-            return (image, all_latents)
+            return (image,)
 
-        return StableDiffusionXLPipelineOutput(images=image), all_latents
+        return StableDiffusionXLPipelineOutput(images=image)
 
     @torch.no_grad()
     def __call__2(
