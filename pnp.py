@@ -114,6 +114,7 @@ class PNP(nn.Module):
         # compute text embeddings
         text_embed_input = torch.cat([self.pnp_guidance_embeds, self.text_embeds], dim=0)
 
+        print(f'source_latents shape {source_latents.shape} x shape {x.shape} text shape {text_embed_input.shape}')
         # apply the denoising network
         noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embed_input)['sample']
 
