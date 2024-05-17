@@ -94,7 +94,7 @@ class PNP(nn.Module):
             pooled_prompt_embeds,
             negative_pooled_prompt_embeds,
         ) = self.pipe.encode_prompt(prompt=prompt, negative_prompt=negative_prompt, num_images_per_prompt=batch_size)
-        text_embeddings = torch.cat([prompt_embeds, negative_prompt_embeds])
+        text_embeddings = torch.cat([negative_prompt_embeds, prompt_embeds])
         return text_embeddings
 
     @torch.no_grad()
@@ -127,7 +127,7 @@ class PNP(nn.Module):
         # compute text embeddings
         text_embed_input = torch.cat([self.pnp_guidance_embeds, self.text_embeds], dim=0)
 
-        print(f'source_latents shape {source_latents.shape} x shape {x.shape} text shape {text_embed_input.shape}')
+        # print(f'source_latents shape {source_latents.shape} x shape {x.shape} text shape {text_embed_input.shape}')
         # apply the denoising network
         noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embed_input)['sample']
 
@@ -142,7 +142,7 @@ class PNP(nn.Module):
     def init_pnp(self, conv_injection_t, qk_injection_t):
         self.qk_injection_timesteps = self.scheduler.timesteps[:qk_injection_t] if qk_injection_t >= 0 else []
         self.conv_injection_timesteps = self.scheduler.timesteps[:conv_injection_t] if conv_injection_t >= 0 else []
-        print(f'register:\n{self}')
+        # print(f'register:\n{self}')
         register_attention_control_efficient(self, self.qk_injection_timesteps)
         register_conv_control_efficient(self, self.conv_injection_timesteps)
 
