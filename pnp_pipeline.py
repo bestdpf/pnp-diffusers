@@ -462,6 +462,8 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                 if self.interrupt:
                     continue
 
+                register_time(self, t.item())
+
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
 
@@ -947,6 +949,8 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         if self.do_classifier_free_guidance:
             prompt_embeds = torch.cat([empty_prompt_embeds, negative_prompt_embeds, prompt_embeds], dim=0)
             add_text_embeds = torch.cat([empty_pooled_prompt_embeds, negative_pooled_prompt_embeds, add_text_embeds], dim=0)
+            # prompt_embeds = torch.cat([prompt_embeds, negative_prompt_embeds, prompt_embeds], dim=0)
+            # add_text_embeds = torch.cat([add_text_embeds, negative_pooled_prompt_embeds, add_text_embeds], dim=0)
             add_neg_time_ids = add_neg_time_ids.repeat(batch_size * num_images_per_prompt, 1)
             add_time_ids = torch.cat([add_time_ids, add_neg_time_ids, add_time_ids], dim=0)
 
@@ -1001,7 +1005,9 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
+                # first_t = timesteps[0]
                 register_time(self, t.item())
+
                 ref_latent = ref_latents_dict[t.item()]
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([ref_latent] + [latents] * 2) if self.do_classifier_free_guidance else latents
@@ -1131,7 +1137,7 @@ def extract_latents(opt):
         negative_prompt='',
         image=image,
         guidance_scale=1,
-        strength=1.0,
+        strength=opt.strength,
         num_inference_steps=opt.steps,
         output_type='latent'
     )
