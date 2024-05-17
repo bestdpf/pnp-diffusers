@@ -1017,6 +1017,7 @@ def extract_latents(opt):
         negative_prompt='',
         image=image,
         guidance_scale=3.5,
+        strength=1.0,
         num_inference_steps=opt.steps,
         output_type='latent'
     )
@@ -1040,7 +1041,7 @@ if __name__ == "__main__":
                         help="stable diffusion version")
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--steps', type=int, default=50)
-    # parser.add_argument('--save-steps', type=int, default=1000)
+    parser.add_argument('--save-steps', type=int, default=1000)
     parser.add_argument('--inversion_prompt', type=str, default='')
     parser.add_argument('--extract-reverse', default=False, action='store_true', help="extract features during the denoising process")
     opt = parser.parse_args()
