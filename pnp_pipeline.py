@@ -1019,7 +1019,7 @@ def extract_latents(opt):
         guidance_scale=3.5,
         num_inference_steps=opt.steps,
         output_type='latent'
-    ).images[0]
+    )
 
     extraction_path_prefix = "_reverse" if opt.extract_reverse else "_forward"
     save_path = os.path.join(opt.save_dir + extraction_path_prefix,
