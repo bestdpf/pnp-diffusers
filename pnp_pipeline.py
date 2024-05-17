@@ -506,7 +506,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                     eps_xt=noise_pred,
                 )
 
-                all_latents.update({t: latents})
+                all_latents.update({t.item(): latents})
 
                 # compute the previous noisy sample x_t -> x_t-1
                 # latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs, return_dict=False)[0]
