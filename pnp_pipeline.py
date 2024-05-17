@@ -999,7 +999,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
-                ref_latent = ref_latents_dict[t]
+                ref_latent = ref_latents_dict[t.item()]
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([ref_latent] + [latents] * 2) if self.do_classifier_free_guidance else latents
 
