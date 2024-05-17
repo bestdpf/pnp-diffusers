@@ -575,9 +575,9 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         self.maybe_free_model_hooks()
 
         if not return_dict:
-            return (image,)
+            return (image, all_latents)
 
-        return StableDiffusionXLPipelineOutput(images=image)
+        return StableDiffusionXLPipelineOutput(images=image), all_latents
 
     @torch.no_grad()
     def __call__2(
