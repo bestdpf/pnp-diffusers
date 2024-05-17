@@ -39,7 +39,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from pnp_utils import register_attention_control_efficient, register_conv_control_efficient
+from pnp_utils import register_attention_control_efficient, register_conv_control_efficient, register_time
 
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
@@ -461,6 +461,8 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
+
+                register_time(self, t.item())
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
@@ -1124,8 +1126,6 @@ def extract_latents(opt):
     ).to("cuda")
 
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
-
-    pipe.injection_schedule = None
 
     _, all_latents = pipe.invert(
         prompt='',
