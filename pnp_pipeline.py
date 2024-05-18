@@ -511,19 +511,19 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                 )
                 prev_timestep = t
 
-                # latents = _backward_ddim(
-                #     x_tm1=latents,
-                #     alpha_t=alpha_prod_t,
-                #     alpha_tm1=alpha_prod_t_prev,
-                #     eps_xt=noise_pred,
-                # )
-
-                latents = _backward_ddim2(
-                    latents=latents,
-                    alpha_prod_t=alpha_prod_t,
-                    alpha_prod_t_prev=alpha_prod_t_prev,
-                    noise_pred=noise_pred,
+                latents = _backward_ddim(
+                    x_tm1=latents,
+                    alpha_t=alpha_prod_t,
+                    alpha_tm1=alpha_prod_t_prev,
+                    eps_xt=noise_pred,
                 )
+
+                # latents = _backward_ddim2(
+                #     latents=latents,
+                #     alpha_prod_t=alpha_prod_t,
+                #     alpha_prod_t_prev=alpha_prod_t_prev,
+                #     noise_pred=noise_pred,
+                # )
 
                 all_latents.update({t.item(): latents})
 
@@ -1018,11 +1018,14 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             ).to(device=device, dtype=latents.dtype)
 
         self._num_timesteps = len(timesteps)
+        first_t = timesteps[0]
+        first_latent = ref_latents_dict[first_t.item()]
+        latents = first_latent
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
-                # first_t = timesteps[0]
+
                 register_time(self, t.item())
 
                 ref_latent = ref_latents_dict[t.item()]
