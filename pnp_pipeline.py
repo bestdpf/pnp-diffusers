@@ -471,9 +471,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(reversed(timesteps)):
                 if self.interrupt:
                     continue
-
-                register_time(self, t.item())
-
+                print(f'invert {i} {t} {add_time_ids}')
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
 
