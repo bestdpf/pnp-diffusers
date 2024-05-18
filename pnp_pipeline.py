@@ -39,7 +39,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from pnp_utils import register_attention_control_efficient, register_conv_control_efficient, register_time
+from pnp_utils import register_attention_control_efficient, register_conv_control_efficient, register_time, seed_everything
 
 if is_torch_xla_available():
     import torch_xla.core.xla_model as xm
@@ -1138,6 +1138,8 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
 
 def extract_latents(opt):
+
+    seed_everything(opt.seed)
 
     image = PIL.Image.open(opt.data_path)
 
