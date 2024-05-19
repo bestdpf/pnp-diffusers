@@ -1159,6 +1159,7 @@ def extract_latents(opt):
     pipe.inverse_scheduler = DDIMInverseScheduler.from_pretrained(model_key,
                                                                   subfolder="scheduler")
     pipe.inverse_scheduler.set_timesteps(opt.steps, device=pipe.device)
+    print(f'inverse steps is {pipe.inverse_scheduler.timesteps}')
 
     _, all_latents = pipe.invert(
         prompt='',
