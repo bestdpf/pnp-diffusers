@@ -1012,7 +1012,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             ).to(device=device, dtype=latents.dtype)
 
         self._num_timesteps = len(timesteps)
-        first_t = timesteps[0]
+        first_t = self.inverse_scheduler.timesteps[-1]
         first_latent = ref_latents_dict[first_t.item()]
         latents = first_latent
         # print(f'first latent is {first_latent}')
@@ -1020,6 +1020,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
+                print(f'gen {i} {t}')
 
                 register_time(self, t.item())
 
