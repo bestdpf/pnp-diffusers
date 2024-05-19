@@ -355,7 +355,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         def denoising_value_valid(dnv):
             return isinstance(dnv, float) and 0 < dnv < 1
 
-        timesteps, num_inference_steps = retrieve_timesteps(self.scheduler, num_inference_steps, device, timesteps)
+        timesteps, num_inference_steps = retrieve_timesteps(self.inverse_scheduler, num_inference_steps, device, timesteps)
         timesteps, num_inference_steps = self.get_timesteps(
             num_inference_steps,
             strength,
@@ -432,7 +432,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             )
 
         # 9. Denoising loop
-        num_warmup_steps = max(len(timesteps) - num_inference_steps * self.scheduler.order, 0)
+        num_warmup_steps = max(len(timesteps) - num_inference_steps * self.inverse_scheduler.order, 0)
 
         # 9.1 Apply denoising_end
         if (
@@ -449,8 +449,8 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         elif self.denoising_end is not None and denoising_value_valid(self.denoising_end):
             discrete_timestep_cutoff = int(
                 round(
-                    self.scheduler.config.num_train_timesteps
-                    - (self.denoising_end * self.scheduler.config.num_train_timesteps)
+                    self.inverse_scheduler.config.num_train_timesteps
+                    - (self.denoising_end * self.inverse_scheduler.config.num_train_timesteps)
                 )
             )
             num_inference_steps = len(list(filter(lambda ts: ts >= discrete_timestep_cutoff, timesteps)))
@@ -469,14 +469,14 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
 
         self._num_timesteps = len(timesteps)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(reversed(timesteps)):
+            for i, t in enumerate(timesteps):
                 if self.interrupt:
                     continue
                 print(f'invert {i} {t}')
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
 
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+                latent_model_input = self.inverse_scheduler.scale_model_input(latent_model_input, t)
 
                 # predict the noise residual
                 added_cond_kwargs = {"text_embeds": add_text_embeds, "time_ids": add_time_ids}
@@ -546,10 +546,10 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                     add_neg_time_ids = callback_outputs.pop("add_neg_time_ids", add_neg_time_ids)
 
                 # call the callback, if provided
-                if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
+                if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.inverse_scheduler.order == 0):
                     progress_bar.update()
                     if callback is not None and i % callback_steps == 0:
-                        step_idx = i // getattr(self.scheduler, "order", 1)
+                        step_idx = i // getattr(self.inverse_scheduler, "order", 1)
                         callback(step_idx, t, latents)
 
                 if XLA_AVAILABLE:
