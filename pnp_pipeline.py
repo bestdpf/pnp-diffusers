@@ -356,12 +356,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             return isinstance(dnv, float) and 0 < dnv < 1
 
         timesteps, num_inference_steps = retrieve_timesteps(self.inverse_scheduler, num_inference_steps, device, timesteps)
-        timesteps, num_inference_steps = self.get_timesteps(
-            num_inference_steps,
-            strength,
-            device,
-            denoising_start=self.denoising_start if denoising_value_valid(self.denoising_start) else None,
-        )
+        print(f'retrieve_timesteps is {timesteps}')
         latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
 
         add_noise = True if self.denoising_start is None else False
@@ -1159,7 +1154,7 @@ def extract_latents(opt):
     pipe.inverse_scheduler = DDIMInverseScheduler.from_pretrained(model_key,
                                                                   subfolder="scheduler")
     pipe.inverse_scheduler.set_timesteps(opt.steps, device=pipe.device)
-    print(f'inverse steps is {pipe.inverse_scheduler.timesteps}')
+    # print(f'inverse steps is {pipe.inverse_scheduler.timesteps}')
 
     _, all_latents = pipe.invert(
         prompt='',
