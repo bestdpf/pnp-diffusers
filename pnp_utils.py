@@ -10,8 +10,8 @@ def seed_everything(seed):
     np.random.seed(seed)
 
 conv_res_dict = {1: [0, 1, 2]}
-down_res_dict = {2: [0, 1]}
-up_res_dict = {1: [0, 1, 2]}
+down_res_dict = {1: [0, 1], 2: [0, 1]}
+up_res_dict = {0: [1, 2], 1: [0, 1, 2]}
 
 def register_time(model, t):
     for res in conv_res_dict:
