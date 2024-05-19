@@ -1012,7 +1012,8 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             ).to(device=device, dtype=latents.dtype)
 
         self._num_timesteps = len(timesteps)
-        first_t = self.inverse_scheduler.timesteps[-1]
+        # first_t = self.inverse_scheduler.timesteps[-1]
+        first_t = timesteps[0]
         first_latent = ref_latents_dict[first_t.item()]
         latents = first_latent
         # print(f'first latent is {first_latent}')
