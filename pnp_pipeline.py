@@ -9,6 +9,7 @@ from diffusers import (
     StableDiffusionXLPipeline,
     StableDiffusionXLImg2ImgPipeline,
     DDIMScheduler,
+    DDIMInverseScheduler,
 )
 
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import (
@@ -471,7 +472,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
             for i, t in enumerate(reversed(timesteps)):
                 if self.interrupt:
                     continue
-                print(f'invert {i} {t} {latents}')
+                # print(f'invert {i} {t} {latents}')
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
 
@@ -501,20 +502,20 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                     # Based on 3.4. in https://arxiv.org/pdf/2305.08891.pdf
                     noise_pred = rescale_noise_cfg(noise_pred, noise_pred_text, guidance_rescale=self.guidance_rescale)
 
-                alpha_prod_t = self.scheduler.alphas_cumprod[t]
-                alpha_prod_t_prev = (
-                    self.scheduler.alphas_cumprod[prev_timestep]
-                    if prev_timestep is not None
-                    else self.scheduler.final_alpha_cumprod
-                )
-                prev_timestep = t
-
-                latents = _backward_ddim(
-                    x_tm1=latents,
-                    alpha_t=alpha_prod_t,
-                    alpha_tm1=alpha_prod_t_prev,
-                    eps_xt=noise_pred,
-                )
+                # alpha_prod_t = self.scheduler.alphas_cumprod[t]
+                # alpha_prod_t_prev = (
+                #     self.scheduler.alphas_cumprod[prev_timestep]
+                #     if prev_timestep is not None
+                #     else self.scheduler.final_alpha_cumprod
+                # )
+                # prev_timestep = t
+                #
+                # latents = _backward_ddim(
+                #     x_tm1=latents,
+                #     alpha_t=alpha_prod_t,
+                #     alpha_tm1=alpha_prod_t_prev,
+                #     eps_xt=noise_pred,
+                # )
 
                 # latents = _backward_ddim2(
                 #     latents=latents,
@@ -526,7 +527,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
                 all_latents.update({t.item(): latents})
 
                 # compute the previous noisy sample x_t -> x_t-1
-                # latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs, return_dict=False)[0]
+                latents = self.inverse_scheduler.step(noise_pred, t, latents, **extra_step_kwargs, return_dict=False)[0]
 
                 if callback_on_step_end is not None:
                     callback_kwargs = {}
@@ -1019,7 +1020,7 @@ class SDXLDDIMPipeline(StableDiffusionXLImg2ImgPipeline):
         first_t = timesteps[0]
         first_latent = ref_latents_dict[first_t.item()]
         latents = first_latent
-        print(f'first latent is {first_latent}')
+        # print(f'first latent is {first_latent}')
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
                 if self.interrupt:
@@ -1144,14 +1145,18 @@ def extract_latents(opt):
     seed_everything(opt.seed)
 
     image = PIL.Image.open(opt.data_path)
+    model_key = '/home/heyi/llm/stable-diffusion-xl-base-1.0/'
+
+    scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler")
 
     pipe = SDXLDDIMPipeline.from_pretrained(
-        '/home/heyi/llm/stable-diffusion-xl-base-1.0/',
+        model_key,
         torch_dtype=torch.float16,
+        scheduler=scheduler,
         use_safetensors=True,
     ).to("cuda")
 
-    pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
+    pipe.inverse_scheduler = DDIMInverseScheduler.from_config(pipe.scheduler.config)
 
     _, all_latents = pipe.invert(
         prompt='',
@@ -1186,6 +1191,7 @@ def extract_latents(opt):
     ).images[0]
 
     ret_img.save(f'PNP-results/girl_glass/output-test.png')
+
 
 
 if __name__ == "__main__":
