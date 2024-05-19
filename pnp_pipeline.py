@@ -1156,7 +1156,7 @@ def extract_latents(opt):
         use_safetensors=True,
     ).to("cuda")
 
-    pipe.inverse_scheduler = DDIMInverseScheduler.from_config(pipe.scheduler.config)
+    pipe.inverse_scheduler = DDIMInverseScheduler.from_pretrained(model_key, subfolder="scheduler")
 
     _, all_latents = pipe.invert(
         prompt='',
